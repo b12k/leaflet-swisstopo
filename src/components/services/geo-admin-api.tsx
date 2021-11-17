@@ -35,7 +35,7 @@ export const geoAdminApi = {
         searchText,
         type: 'locations',
         origins: origins.join(','),
-        limit: 6,
+        limit: 10,
       }
     }),
   identify: (x: number, y: number) => axiosInstance

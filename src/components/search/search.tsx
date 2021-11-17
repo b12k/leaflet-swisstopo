@@ -50,6 +50,8 @@ export const Search: FunctionComponent<{
     setOpen(false);
   }
 
+  const clearInput = () => setSearchText('');
+
   return (
     <section
       className={cn([
@@ -57,12 +59,23 @@ export const Search: FunctionComponent<{
         'dropdown',
       ])}
     >
-      <input
-        type="text"
-        className="form-control dropdown-toggle"
-        onChange={handleChange}
-        value={searchText}
-      />
+      <div className="input-group">
+        <span className="input-group-text">📍</span>
+        <input
+          type="text"
+          className="form-control dropdown-toggle"
+          onChange={handleChange}
+          value={searchText}
+          placeholder="Address or zipcode"
+        />
+        <button
+          className="btn btn-outline-secondary"
+          type="button"
+          onClick={clearInput}
+        >
+          ❌
+        </button>
+      </div>
       <ul className={cn({
         'dropdown-menu w-100': true,
         'show': isOpen,
