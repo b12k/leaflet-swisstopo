@@ -1,0 +1,8 @@
+#map {
+  height: 50vh;
+}
+
+#pointer {
+  pointer-events: none;
+  margin-top: -60px;
+}
