@@ -6,7 +6,7 @@ import React, {
 import cn from 'classnames';
 import { debounce } from 'lodash';
 
-import { geoAdminApi, Location } from '../services';
+import { geoAdminApi, Location } from '../../services';
 
 const getLocations = debounce((searchText: string, cb: (results: Location[]) => void) => {
   geoAdminApi
@@ -21,36 +21,27 @@ export const Search: FunctionComponent<{
   className,
   onFound = () => {},
 }) => {
-  const [isOpen, setOpen] = useState(false);
   const [searchText, setSearchText] = useState('');
   const [locations, setLocations] = useState<Location[]>([]);
 
   const handleChange = async (event: ChangeEvent<HTMLInputElement>) => {
     setSearchText(event.target.value);
-    if (event.target.value.length < 4) {
-      if (isOpen) setOpen(false);
-      if (locations.length) setLocations([]);
-      return;
-    }
-    getLocations(event.target.value, (results) => {
-      setLocations(results.map((location) => ({
-        ...location,
-        attrs: {
-          ...location.attrs,
-          label: location.attrs.label.replace('</b>', '').split('<b>').map((s) => s.trim()).join(', '),
-        },
-      })));
-      setOpen(!!results.length);
-    });
+
+    if (event.target.value.length < 4) return setLocations([]);
+
+    getLocations(event.target.value, (results) => setLocations(results));
   }
 
   const handleClick = (location: Location) => {
     onFound(location);
-    setSearchText(location.attrs.label);
-    setOpen(false);
+    setSearchText(location.attrs.label.replace(/[<b>|</b>]/g, ''));
+    setLocations([]);
   }
 
-  const clearInput = () => setSearchText('');
+  const clearInput = () => {
+    setSearchText('');
+    setLocations([]);
+  }
 
   return (
     <section
@@ -66,7 +57,7 @@ export const Search: FunctionComponent<{
           className="form-control dropdown-toggle"
           onChange={handleChange}
           value={searchText}
-          placeholder="Address or zipcode"
+          placeholder="Address, zipcode or cadastral number"
         />
         <button
           className="btn btn-outline-secondary"
@@ -78,7 +69,7 @@ export const Search: FunctionComponent<{
       </div>
       <ul className={cn({
         'dropdown-menu w-100': true,
-        'show': isOpen,
+        'show': locations.length,
       })}>
         { locations.map((location) => (
           <li key={location.id}>
@@ -87,9 +78,10 @@ export const Search: FunctionComponent<{
               className="dropdown-item"
               onClick={() => handleClick(location)}
             >
-              <span className="text-truncate">
-                { location.attrs.label }
-              </span>
+              <span
+                className="text-truncate"
+                dangerouslySetInnerHTML={{__html: location.attrs.label }}
+              />
             </button>
           </li>
         )) }
