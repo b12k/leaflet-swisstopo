@@ -22,10 +22,10 @@ const MAX_ZOOM = 18;
 export const Map: FunctionComponent = () => {
   const [map, setMap] = useState<Leaflet.Map>();
   const [layers] = useState({
-    pixelMap: Leaflet.tileLayer.wms('https://wms.geo.admin.ch/?', {
+    pixelMap: Leaflet.tileLayer.wms('https://wms2.geo.admin.ch/?', {
       layers: 'ch.swisstopo.pixelkarte-farbe',
     }),
-    cadastralMap: Leaflet.tileLayer.wms('https://wms.geo.admin.ch/?', {
+    cadastralMap: Leaflet.tileLayer.wms('https://wms2.geo.admin.ch/?', {
       layers: 'ch.kantone.cadastralwebmap-farbe',
     }),
   });
