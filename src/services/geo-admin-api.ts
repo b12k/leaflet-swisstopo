@@ -27,6 +27,9 @@ interface GeoAdminIdentifyResponse {
       number: number,
       egris_egrid: string,
     },
+    geometry: {
+      rings: Array<Array<[number, number]>>
+    }
   }>,
 }
 

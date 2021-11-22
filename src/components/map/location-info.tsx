@@ -11,11 +11,13 @@ export interface LocationInfo {
     x: number,
     y: number,
   },
+  surface?: number,
 }
 
 const NOT_AVAILABLE = 'n/a';
 
 export const LocationInfo: FunctionComponent<LocationInfo & { className?: string }> = ({
+  surface,
   className,
   swissGrid,
   coordinates,
@@ -33,5 +35,7 @@ export const LocationInfo: FunctionComponent<LocationInfo & { className?: string
     <dd>{cadastralNumber || NOT_AVAILABLE}</dd>
     <dt>EGRIS/EGRID</dt>
     <dd>{egrisEgridCode || NOT_AVAILABLE}</dd>
+    <dt>Parcel surface</dt>
+    <dd>{surface ? `${surface}m2` : NOT_AVAILABLE}</dd>
   </dl>
 );

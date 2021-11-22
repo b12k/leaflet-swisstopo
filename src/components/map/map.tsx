@@ -5,6 +5,7 @@ import React, {
 } from 'react';
 import Leaflet from 'leaflet';
 import * as swissgrid from 'swissgrid';
+import gaussShoelace from 'gauss-shoelace';
 
 import 'leaflet/dist/leaflet.css';
 
@@ -78,6 +79,9 @@ export const Map: FunctionComponent = () => {
       },
       egrisEgridCode: results[0]?.attributes.egris_egrid,
       cadastralNumber: results[0]?.attributes.number,
+      surface: results[0].geometry.rings.reduce((acc, next) => {
+        return acc + gaussShoelace(next);
+      }, 0),
     };
 
     console.log(await geoAdminApi.search(swissGrid));
