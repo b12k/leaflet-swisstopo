@@ -3,7 +3,11 @@ import axios, { AxiosResponse } from 'axios';
 const axiosInstance = axios.create({
   baseURL: 'https://api3.geo.admin.ch/rest/services/'
 });
+
 type SearchOrigin = 'zipcode' | 'address' | 'parcel';
+
+type Geometry = Array<[number, number]>;
+
 export type Location = {
   id: number,
   weight: number,
@@ -28,7 +32,7 @@ interface GeoAdminIdentifyResponse {
       egris_egrid: string,
     },
     geometry: {
-      rings: Array<Array<[number, number]>>
+      rings: Array<Geometry>
     }
   }>,
 }
@@ -86,4 +90,16 @@ export const geoAdminApi = {
         tolerance: 0,
       },
     }),
+  getHeights: (geometry: Geometry) => axiosInstance.get('profile.json', {
+    params: {
+      geom: {
+        type: 'LineString',
+        coordinates: geometry,
+      },
+      sr: 2056,
+      distinct_points: true,
+      nb_points: 4,
+    }
+  }),
 }
+

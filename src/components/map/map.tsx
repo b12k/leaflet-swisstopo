@@ -22,6 +22,7 @@ const MAX_ZOOM = 18;
 
 export const Map: FunctionComponent = () => {
   const [map, setMap] = useState<Leaflet.Map>();
+
   const [layers] = useState({
     pixelMap: Leaflet.tileLayer.wms('https://wms2.geo.admin.ch/?', {
       layers: 'ch.swisstopo.pixelkarte-farbe',
@@ -29,7 +30,12 @@ export const Map: FunctionComponent = () => {
     cadastralMap: Leaflet.tileLayer.wms('https://wms2.geo.admin.ch/?', {
       layers: 'ch.kantone.cadastralwebmap-farbe',
     }),
+    contaminatedAreasMap: Leaflet.tileLayer.wms('https://geodienste.ch/db/kataster_belasteter_standorte_v1_4_0/deu?', {
+      layers: 'belastete_standorte_flaechen',
+      opacity: 0.35,
+    }),
   });
+
   const [locationInfo, setLocationInfo] = useState<LocationInfo>({})
 
   useEffect(() => {
@@ -53,8 +59,10 @@ export const Map: FunctionComponent = () => {
     if (map.getZoom() < 16) {
       if (!map.hasLayer(layers.pixelMap)) map.addLayer(layers.pixelMap);
       if (map.hasLayer(layers.cadastralMap)) map.removeLayer(layers.cadastralMap);
+      if (map.hasLayer(layers.contaminatedAreasMap)) map.removeLayer(layers.contaminatedAreasMap);
     } else {
       if (!map.hasLayer(layers.cadastralMap)) map.addLayer(layers.cadastralMap);
+      if (!map.hasLayer(layers.contaminatedAreasMap)) map.addLayer(layers.contaminatedAreasMap);
       if (map.hasLayer(layers.pixelMap)) map.removeLayer(layers.pixelMap);
     }
   }
@@ -68,6 +76,10 @@ export const Map: FunctionComponent = () => {
     const swissGrid = swissgrid.project([markerCoordinates.lng, markerCoordinates.lat]);
 
     const { data: { results }} = await geoAdminApi.identify(swissGrid);
+    const result = results[0];
+
+    if (!result) return;
+
     const data: LocationInfo = {
       coordinates: {
         lon: markerCoordinates.lng,
@@ -77,15 +89,36 @@ export const Map: FunctionComponent = () => {
         x: swissGrid[1],
         y: swissGrid[0],
       },
-      egrisEgridCode: results[0]?.attributes.egris_egrid,
-      cadastralNumber: results[0]?.attributes.number,
-      surface: results[0].geometry.rings.reduce((acc, next) => {
+      egrisEgridCode: result.attributes.egris_egrid,
+      cadastralNumber: result.attributes.number,
+      surface: result.geometry.rings.reduce((acc, next) => {
         return acc + gaussShoelace(next);
       }, 0),
     };
-
-    console.log(await geoAdminApi.search(swissGrid));
-
+    const tops = result.geometry.rings[0].reduce<{
+      xMin: number,
+      xMax: number,
+      yMin: number,
+      yMax: number,
+    }>((acc, [yCurr, xCurr]) => {
+      if (!acc.xMin || xCurr < acc.xMin) acc.xMin = xCurr;
+      if (!acc.xMax || xCurr > acc.xMax) acc.xMax = xCurr;
+      if (!acc.yMin || yCurr < acc.yMin) acc.yMin = yCurr;
+      if (!acc.yMax || yCurr > acc.yMax) acc.yMax = yCurr;
+      return acc;
+    }, {
+      xMin: 0,
+      xMax: 0,
+      yMin: 0,
+      yMax: 0,
+    });
+    const rectangleGeometryPoints: Array<[number, number]> = [
+      [tops.yMin, tops.xMin],
+      [tops.yMax, tops.xMin],
+      [tops.yMax, tops.xMax],
+      [tops.yMin, tops.xMax],
+    ];
+    console.log('Geometry:', rectangleGeometryPoints, await geoAdminApi.getHeights(rectangleGeometryPoints));
     setLocationInfo(data);
   }
 
