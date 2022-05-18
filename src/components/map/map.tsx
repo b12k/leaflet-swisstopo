@@ -29,6 +29,10 @@ export const Map: FunctionComponent = () => {
     }),
     cadastralMap: Leaflet.tileLayer.wms('https://wms2.geo.admin.ch/?', {
       layers: 'ch.kantone.cadastralwebmap-farbe',
+      opacity: 0.35,
+    }),
+    steepnessMap: Leaflet.tileLayer.wms('https://wms2.geo.admin.ch/?', {
+      layers: 'ch.blw.hang_steillagen',
     }),
     contaminatedAreasMap: Leaflet.tileLayer.wms('https://geodienste.ch/db/kataster_belasteter_standorte_v1_4_0/deu?', {
       layers: 'belastete_standorte_flaechen',
@@ -60,7 +64,9 @@ export const Map: FunctionComponent = () => {
       if (!map.hasLayer(layers.pixelMap)) map.addLayer(layers.pixelMap);
       if (map.hasLayer(layers.cadastralMap)) map.removeLayer(layers.cadastralMap);
       if (map.hasLayer(layers.contaminatedAreasMap)) map.removeLayer(layers.contaminatedAreasMap);
+      if (map.hasLayer(layers.steepnessMap)) map.removeLayer(layers.steepnessMap);
     } else {
+      if (!map.hasLayer(layers.steepnessMap)) map.addLayer(layers.steepnessMap);
       if (!map.hasLayer(layers.cadastralMap)) map.addLayer(layers.cadastralMap);
       if (!map.hasLayer(layers.contaminatedAreasMap)) map.addLayer(layers.contaminatedAreasMap);
       if (map.hasLayer(layers.pixelMap)) map.removeLayer(layers.pixelMap);
